@@ -3,8 +3,19 @@
  * No user accounts required - generates and manages anonymous session IDs
  */
 
-import { v4 as uuidv4 } from 'uuid';
 import type { AnonymousSession, SessionMetadata, SessionToken } from './types';
+
+// Re-export types for convenience
+export type { AnonymousSession, SessionMetadata, SessionToken } from './types';
+
+// Simple UUID generator (no external dependency)
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 const SESSION_STORAGE_KEY = 'ai_suite_session';
 const SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -15,7 +26,7 @@ const SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export function createAnonymousSession(metadata?: SessionMetadata): AnonymousSession {
   const now = Date.now();
   return {
-    id: uuidv4(),
+    id: generateUUID(),
     createdAt: now,
     lastActiveAt: now,
     metadata,

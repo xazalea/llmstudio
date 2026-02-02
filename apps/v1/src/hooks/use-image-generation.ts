@@ -2,35 +2,33 @@
 
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { ImageGenerationRequest, ImageGenerationResult, ImageModel } from "@lib/api/types";
+import type { ImageGenerationRequest, ImageGenerationResult, ImageModel } from "@/types/api";
 
-// Simulated generation for demo - in production would call actual APIs
+// Call the real API endpoint
 async function generateImage(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
-  
-  // Generate placeholder images (in production, this would call Hugging Face API)
-  const seed = request.seed || Math.floor(Math.random() * 1000000);
-  const width = request.width || 1024;
-  const height = request.height || 1024;
-  
-  // Use picsum for demo placeholder images
-  const images = Array.from({ length: 4 }, (_, i) => ({
-    url: `https://picsum.photos/seed/${seed + i}/${width}/${height}`,
-    width,
-    height,
-    seed: seed + i,
-  }));
+  const response = await fetch('/api/generate/image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: request.prompt,
+      negativePrompt: request.negativePrompt,
+      model: request.model,
+      width: request.width || 1024,
+      height: request.height || 1024,
+      steps: request.steps,
+      guidanceScale: request.guidanceScale,
+      seed: request.seed,
+      stylePreset: request.stylePreset,
+    }),
+  });
 
-  return {
-    id: crypto.randomUUID(),
-    status: "completed",
-    images,
-    prompt: request.prompt,
-    model: request.model,
-    createdAt: Date.now(),
-    completedAt: Date.now(),
-  };
+  const json = await response.json();
+
+  if (!json.success) {
+    throw new Error(json.error?.message || 'Generation failed');
+  }
+
+  return json.data;
 }
 
 export interface GenerationState {
@@ -71,44 +69,38 @@ export const AVAILABLE_MODELS: { id: ImageModel; name: string; description: stri
   {
     id: "flux-schnell",
     name: "FLUX.1 Schnell",
-    description: "Ultra-fast generation with great quality",
-    speed: "~4s",
-  },
-  {
-    id: "stable-diffusion-xl",
-    name: "Stable Diffusion XL",
-    description: "High-quality 1024px images with excellent detail",
-    speed: "~15s",
-  },
-  {
-    id: "stable-diffusion-3",
-    name: "Stable Diffusion 3",
-    description: "Latest SD model with improved text rendering",
-    speed: "~20s",
+    description: "Ultra-fast generation with great quality (4 steps)",
+    speed: "~8s",
   },
   {
     id: "flux-dev",
     name: "FLUX.1 Dev",
     description: "High-quality FLUX for detailed generations",
-    speed: "~25s",
+    speed: "~30s",
   },
   {
-    id: "sdxl-turbo",
-    name: "SDXL Turbo",
-    description: "Lightning-fast single-step generation",
-    speed: "~2s",
+    id: "sdxl-lightning",
+    name: "SDXL Lightning",
+    description: "ByteDance ultra-fast SDXL in 4 steps",
+    speed: "~6s",
+  },
+  {
+    id: "stable-diffusion-3",
+    name: "Stable Diffusion 3.5",
+    description: "Latest SD model with improved text rendering",
+    speed: "~25s",
   },
   {
     id: "playground-v2",
     name: "Playground v2.5",
     description: "Aesthetic-focused model for artistic images",
-    speed: "~18s",
+    speed: "~20s",
   },
   {
-    id: "kandinsky-3",
-    name: "Kandinsky 3",
-    description: "Multilingual model with unique artistic style",
-    speed: "~15s",
+    id: "kolors",
+    name: "Kolors",
+    description: "Kwai high-quality diffusion model",
+    speed: "~18s",
   },
 ];
 

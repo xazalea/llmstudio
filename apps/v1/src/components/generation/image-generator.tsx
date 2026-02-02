@@ -11,7 +11,7 @@ import {
   ImageIcon,
   Loader2Icon,
   ChevronDownIcon,
-  DiceIcon,
+  Dices,
   ZapIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import {
   ASPECT_RATIOS,
   STYLE_PRESETS,
 } from "@/hooks/use-image-generation";
-import type { ImageModel, AspectRatio } from "@lib/api/types";
+import type { ImageModel, AspectRatio } from "@/types/api";
 
 export function ImageGenerator() {
   // Form state
@@ -237,7 +237,7 @@ export function ImageGenerator() {
                   className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm"
                 />
                 <Button variant="outline" size="icon" onClick={handleRandomSeed}>
-                  <DiceIcon className="h-4 w-4" />
+                  <Dices className="h-4 w-4" />
                 </Button>
               </div>
             </div>

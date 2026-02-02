@@ -1,6 +1,6 @@
 "use client";
 
-import { SparklesIcon, MenuIcon } from "lucide-react";
+import { SparklesIcon, MenuIcon, BellIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export function Header({ title, onMenuClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/10 bg-background/80 backdrop-blur-xl px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/10 bg-[#030303]/80 backdrop-blur-xl px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -21,13 +21,13 @@ export function Header({ title, onMenuClick }: HeaderProps) {
       </Button>
 
       {title && (
-        <h1 className="text-xl font-semibold">{title}</h1>
+        <h1 className="text-xl font-bold">{title}</h1>
       )}
 
-      <div className="ml-auto flex items-center gap-4">
-        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-4 py-1.5">
-          <SparklesIcon className="h-4 w-4 text-purple-400" />
-          <span className="text-sm font-medium">Free & Unlimited</span>
+      <div className="ml-auto flex items-center gap-3">
+        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 px-4 py-1.5 border border-violet-500/30">
+          <SparklesIcon className="h-4 w-4 text-violet-400" />
+          <span className="text-sm font-medium text-violet-300">Free & Unlimited</span>
         </div>
       </div>
     </header>

@@ -30,7 +30,7 @@ import {
   MOTION_PRESETS,
   VIDEO_ASPECT_RATIOS,
 } from "@/hooks/use-video-generation";
-import type { VideoModel, AspectRatio } from "@lib/api/types";
+import type { VideoModel } from "@/types/api";
 
 export function VideoGenerator() {
   // Form state

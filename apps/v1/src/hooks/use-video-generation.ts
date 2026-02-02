@@ -2,29 +2,66 @@
 
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { VideoGenerationRequest, VideoGenerationResult, VideoModel, MotionPreset } from "@lib/api/types";
 
-// Simulated generation for demo
-async function generateVideo(request: VideoGenerationRequest): Promise<VideoGenerationResult> {
-  await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 5000));
-  
-  // Demo video URL (in production would call actual API)
-  const seed = Math.floor(Math.random() * 1000000);
-  
-  return {
-    id: crypto.randomUUID(),
-    status: "completed",
-    videoUrl: `https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4`,
-    thumbnailUrl: `https://picsum.photos/seed/${seed}/1024/576`,
-    duration: request.duration || 4,
-    fps: request.fps || 24,
-    width: request.width || 1024,
-    height: request.height || 576,
-    prompt: request.prompt,
-    model: request.model,
-    createdAt: Date.now(),
-    completedAt: Date.now(),
+export interface VideoGenerationRequest {
+  prompt: string;
+  negativePrompt?: string;
+  model?: string;
+  steps?: number;
+  fps?: number;
+  duration?: number;
+  imageUrl?: string;
+  width?: number;
+  height?: number;
+  motionPreset?: {
+    id: string;
+    name: string;
+    description: string;
+    cameraMotion?: {
+      type: string;
+      intensity: number;
+    };
   };
+  motionStrength?: number;
+  startFrame?: string;
+  seed?: number;
+}
+
+export interface VideoGenerationResult {
+  id: string;
+  status: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  prompt: string;
+  model: string;
+  duration?: number;
+  fps?: number;
+  width?: number;
+  height?: number;
+  parameters: {
+    steps?: number;
+    fps?: number;
+    duration?: number;
+  };
+  createdAt: number;
+  completedAt: number;
+}
+
+// Call the real API endpoint
+async function generateVideo(request: VideoGenerationRequest): Promise<VideoGenerationResult> {
+  const response = await fetch('/api/generate/video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  const json = await response.json();
+
+  if (!json.success) {
+    throw new Error(json.error?.message || 'Video generation failed');
+  }
+
+  return json.data;
 }
 
 export function useVideoGeneration() {
@@ -55,88 +92,84 @@ export function useVideoGeneration() {
   };
 }
 
-export const VIDEO_MODELS: { id: VideoModel; name: string; description: string; maxDuration: number }[] = [
+export const VIDEO_MODELS = [
   {
-    id: "animatediff",
-    name: "AnimateDiff",
-    description: "Animate images or generate motion from text",
+    id: "animatediff-lightning",
+    name: "AnimateDiff Lightning",
+    description: "Fast text-to-video with AnimateDiff (4 steps)",
+    speed: "~15s",
     maxDuration: 4,
   },
   {
-    id: "stable-video-diffusion",
-    name: "Stable Video Diffusion",
+    id: "i2vgen-xl",
+    name: "I2VGen-XL",
     description: "High-quality image-to-video generation",
-    maxDuration: 4,
+    speed: "~30s",
+    requiresImage: true,
+    maxDuration: 6,
   },
   {
-    id: "modelscope",
-    name: "ModelScope Text2Video",
-    description: "Text-to-video with natural motion",
-    maxDuration: 2,
-  },
-  {
-    id: "zeroscope",
-    name: "Zeroscope v2",
-    description: "Fast text-to-video generation",
-    maxDuration: 3,
-  },
-];
-
-export const MOTION_PRESETS: MotionPreset[] = [
-  {
-    id: "static",
-    name: "Static",
-    description: "Subtle animation, no camera movement",
-    params: { motion_strength: 0.3 },
-  },
-  {
-    id: "slow-zoom-in",
-    name: "Slow Zoom In",
-    description: "Gradual zoom towards subject",
-    params: { motion_strength: 0.5, camera: "zoom_in" },
-  },
-  {
-    id: "slow-zoom-out",
-    name: "Slow Zoom Out",
-    description: "Gradual zoom away from subject",
-    params: { motion_strength: 0.5, camera: "zoom_out" },
-  },
-  {
-    id: "pan-left",
-    name: "Pan Left",
-    description: "Smooth horizontal pan left",
-    params: { motion_strength: 0.6, camera: "pan_left" },
-  },
-  {
-    id: "pan-right",
-    name: "Pan Right",
-    description: "Smooth horizontal pan right",
-    params: { motion_strength: 0.6, camera: "pan_right" },
-  },
-  {
-    id: "orbit",
-    name: "Orbit",
-    description: "Camera orbits around subject",
-    params: { motion_strength: 0.7, camera: "orbit" },
-  },
-  {
-    id: "dynamic",
-    name: "Dynamic",
-    description: "High motion with dramatic movement",
-    params: { motion_strength: 0.9, camera: "dynamic" },
-  },
-  {
-    id: "cinematic",
-    name: "Cinematic",
-    description: "Film-like movement and pacing",
-    params: { motion_strength: 0.6, camera: "cinematic" },
+    id: "cogvideox",
+    name: "CogVideoX",
+    description: "Advanced text-to-video model",
+    speed: "~60s",
+    maxDuration: 10,
   },
 ];
 
 export const VIDEO_ASPECT_RATIOS = [
   { id: "16:9", name: "Landscape (16:9)", width: 1024, height: 576 },
   { id: "9:16", name: "Portrait (9:16)", width: 576, height: 1024 },
-  { id: "1:1", name: "Square (1:1)", width: 576, height: 576 },
-  { id: "4:3", name: "Standard (4:3)", width: 768, height: 576 },
-  { id: "21:9", name: "Cinematic (21:9)", width: 1024, height: 440 },
+  { id: "1:1", name: "Square (1:1)", width: 768, height: 768 },
+  { id: "4:3", name: "Standard (4:3)", width: 1024, height: 768 },
+];
+
+export const MOTION_PRESETS = [
+  {
+    id: "none",
+    name: "None",
+    description: "No camera motion",
+  },
+  {
+    id: "zoom-in",
+    name: "Zoom In",
+    description: "Slowly zoom into the scene",
+    cameraMotion: { type: "zoom", intensity: 0.5 },
+  },
+  {
+    id: "zoom-out",
+    name: "Zoom Out",
+    description: "Slowly zoom out from the scene",
+    cameraMotion: { type: "zoom", intensity: -0.5 },
+  },
+  {
+    id: "pan-left",
+    name: "Pan Left",
+    description: "Camera pans from right to left",
+    cameraMotion: { type: "pan", intensity: 0.5 },
+  },
+  {
+    id: "pan-right",
+    name: "Pan Right",
+    description: "Camera pans from left to right",
+    cameraMotion: { type: "pan", intensity: -0.5 },
+  },
+  {
+    id: "tilt-up",
+    name: "Tilt Up",
+    description: "Camera tilts upward",
+    cameraMotion: { type: "tilt", intensity: 0.5 },
+  },
+  {
+    id: "tilt-down",
+    name: "Tilt Down",
+    description: "Camera tilts downward",
+    cameraMotion: { type: "tilt", intensity: -0.5 },
+  },
+  {
+    id: "orbit",
+    name: "Orbit",
+    description: "Camera orbits around subject",
+    cameraMotion: { type: "orbit", intensity: 0.5 },
+  },
 ];
