@@ -1,0 +1,16 @@
+{
+  "name": "ai-creative-suite-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps/v1",
+    "build": "npm run build --prefix apps/v1",
+    "start": "npm run start --prefix apps/v1",
+    "lint": "npm run lint --prefix apps/v1",
+    "install:all": "cd apps/v1 && npm install",
+    "deploy": "npm run build --prefix apps/v1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

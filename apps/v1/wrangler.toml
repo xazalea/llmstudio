@@ -3,35 +3,14 @@ name = "ai-creative-suite"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Build configuration
-[build]
-command = "npm run build"
-cwd = "."
+# Pages-specific settings
+pages_build_output_dir = ".vercel/output/static"
 
-# Environment variables (set these in Cloudflare dashboard for secrets)
+# Environment variables (set secrets in Cloudflare dashboard)
 [vars]
 NEXT_PUBLIC_APP_URL = "https://ai-creative-suite.pages.dev"
 
-# Optional: Cloudflare AI bindings (free tier)
-# Uncomment if you want to use Cloudflare's AI models as fallback
-# [[ai]]
-# binding = "AI"
-
-# KV namespace for caching (optional)
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = "your-kv-namespace-id"
-
-# R2 bucket for storing generated assets (optional)
-# [[r2_buckets]]
-# binding = "ASSETS"
-# bucket_name = "ai-creative-assets"
-
-# Pages-specific configuration
-[site]
-bucket = ".vercel/output/static"
-
-# Redirects and headers
+# Headers for security and caching
 [[headers]]
 for = "/*"
 [headers.values]
@@ -39,13 +18,11 @@ X-Frame-Options = "DENY"
 X-Content-Type-Options = "nosniff"
 Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Cache static assets
 [[headers]]
 for = "/_next/static/*"
 [headers.values]
 Cache-Control = "public, max-age=31536000, immutable"
 
-# API routes - no cache
 [[headers]]
 for = "/api/*"
 [headers.values]
